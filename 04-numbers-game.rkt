@@ -197,7 +197,7 @@
 (check-equal? (all-nums '(1 hello 2 world 3)) '(1 2 3))
 
 
-(define equan
+(define equan?
   (lambda (a1 a2)
     (cond
       [(and (number? a1) (number? a2)) (= a1 a2)]
