@@ -204,10 +204,10 @@
       [(and (not (number? a1)) (not (number? a2))) (eq? a1 a2)]
       [else #f])))
 
-(check-true (equan 1 1))
-(check-true (equan 'hello 'hello))
-(check-false (equan ''1 1))
-(check-false (equan 'hello 'world))
+(check-true (equan? 1 1))
+(check-true (equan? 'hello 'hello))
+(check-false (equan? ''1 1))
+(check-false (equan? 'hello 'world))
 
 
 (define occur
