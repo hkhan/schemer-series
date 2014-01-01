@@ -68,8 +68,7 @@
     (cond
       [(null? lat) '()]
       [(eq? old (car lat)) (cons old (cons new (cdr lat)))]
-      [else (cons (car lat) (insertR new old (cdr lat)))]
-    )))
+      [else (cons (car lat) (insertR new old (cdr lat)))])))
 
 (check-equal? (insertR 'new 'old '()) '())
 (check-equal? (insertR 'topping 'fudge '(ice cream with fudge for dessert fudge))
@@ -82,8 +81,7 @@
     (cond
       [(null? lat) '()]
       [(eq? old (car lat)) (cons new lat)]
-      [else (cons (car lat) (insertL new old (cdr lat)))]
-    )))
+      [else (cons (car lat) (insertL new old (cdr lat)))])))
 
 (check-equal? (insertL 'topping 'fudge '(ice cream with fudge for dessert))
               '(ice cream with topping fudge for dessert))
@@ -95,8 +93,7 @@
     (cond
       [(null? lat) '()]
       [(eq? (car lat) old) (cons new (cdr lat))]
-      [else (cons (car lat) (subst new old (cdr lat)))]
-    )))
+      [else (cons (car lat) (subst new old (cdr lat)))])))
 
 (check-equal? (subst 'topping 'fudge '(ice cream with fudge for dessert))
               '(ice cream with topping for dessert))
@@ -109,8 +106,7 @@
     (cond
       [(null? lat) '()]
       [(or (eq? (car lat) o1) (eq? (car lat) o2)) (cons new (cdr lat))]
-      [else (cons (car lat) (subst2 new o1 o2 (cdr lat)))]
-    )))
+      [else (cons (car lat) (subst2 new o1 o2 (cdr lat)))])))
 
 (check-equal? (subst2 'vanilla 'choc 'banana '(the banana ice cream with choc topping))
               '(the vanilla ice cream with choc topping))
