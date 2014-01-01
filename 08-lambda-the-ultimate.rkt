@@ -1,0 +1,184 @@
+#lang racket
+
+(require rackunit)
+
+(define atom?
+  (lambda (x)
+    (and (not (pair? x)) (not (null? x)))))
+
+;; definitions from earlier exercises
+(define plus
+  (lambda (a b)
+    (cond
+      [(zero? b) a]
+      [else (add1 (plus a (sub1 b)))])))
+
+(define mult
+  (lambda (a b)
+    (cond
+      [(zero? b) 0]
+      [else (plus a (mult a (sub1 b)))])))
+
+(define exp
+  (lambda (n m)
+    (cond
+      [(zero? m) 1]
+      [else (mult n (exp n (sub1 m)))])))
+;;-------------------------------------------
+
+(define rember-f
+  (lambda (test? a lat)
+    (cond
+      [(null? lat) '()]
+      [(test? a (car lat)) (cdr lat)]
+      [else (cons (car lat) (rember-f test? a (cdr lat)))])))
+
+(check-equal? (rember-f equal? 'mint '(lamb chops and mint jelly))
+              '(lamb chops and jelly))
+(check-equal? (rember-f equal? 'mint '(lamb and mint flavored mint jelly))
+              '(lamb and flavored mint jelly))
+(check-equal? (rember-f equal? 'mint '(egg sandwich))
+              '(egg sandwich))
+(check-equal? (rember-f equal? 'cup '(coffee cup tea cup and hick cup))
+              '(coffee tea cup and hick cup))
+(check-equal? (rember-f = 5 '(6 2 5 3)) '(6 2 3))
+(check-equal? (rember-f equal? '(pop corn) '(lemonade (pop corn) and (cake)))
+              '(lemonade and (cake)))
+
+(define eq?-c
+  (lambda (a)
+    (lambda (x) (eq? x a))))
+
+(define eq?-salad
+  (eq?-c 'salad))
+
+(check-true (eq?-salad 'salad))
+(check-false (eq?-salad 'blah))
+
+(check-true ((eq?-c 'salad) 'salad))
+(check-false ((eq?-c 'salad) 'blah))
+
+(define rember-f2
+  (lambda (test?)
+    (lambda (a l)
+      (cond
+        [(null? l) '()]
+        [(test? a (car l)) (cdr l)]
+        [else (cons (car l) ((rember-f2 test?) a (cdr l)))]))))
+
+(define rember-eq?
+  (rember-f2 eq?))
+
+(check-equal? ((rember-f2 eq?) 'tuna '(tuna salad)) '(salad))
+(check-equal? ((rember-f2 =) 1 '(1 2 3)) '(2 3))
+
+
+(define insertL-f
+  (lambda (test?)
+    (lambda (new old lat)
+      (cond
+        [(null? lat) '()]
+        [(test? old (car lat)) (cons new (cons old (cdr lat)))]
+        [else (cons (car lat) ((insertL-f test?) new old (cdr lat)))]))))
+
+(check-equal? ((insertL-f equal?) 'topping 'fudge '(ice cream with fudge for dessert))
+              '(ice cream with topping fudge for dessert))
+(check-equal? ((insertL-f equal?) 'e 'f '(a b c d f g h)) '(a b c d e f g h))
+(check-equal? ((insertL-f =) 2 3 '(1 3)) '(1 2 3))
+
+
+(define insertR-f
+  (lambda (test?)
+    (lambda (new old lat)
+      (cond
+        [(null? lat) '()]
+        [(test? old (car lat)) (cons old (cons new (cdr lat)))]
+        [else (cons (car lat) ((insertR-f test?) new old (cdr lat)))]))))
+
+(check-equal? ((insertR-f equal?) 'new 'old '()) '())
+(check-equal? ((insertR-f equal?) 'topping 'fudge '(ice cream with fudge for dessert fudge))
+              '(ice cream with fudge topping for dessert fudge))
+(check-equal? ((insertR-f equal?) 'e 'd '(a b c d f g h)) '(a b c d e f g h))
+(check-equal? ((insertR-f =) 3 2 '(1 2)) '(1 2 3))
+
+(define seqR
+  (lambda (new old l)
+    (cons old (cons new l))))
+
+(define seqL
+  (lambda (new old l)
+    (cons new (cons old l))))
+
+(define insert-g
+  (lambda (seq)
+      (lambda (new old l)
+        (cond
+          [(null? l) '()]
+          [(eq? old (car l)) (seq new old (cdr l))]
+          [else (cons (car l) ((insert-g seq) new old (cdr l)))]))))
+
+(check-equal? ((insert-g seqR) 3 2 '(1 2)) '(1 2 3))
+
+(define insertL (insert-g seqL))
+
+(check-equal? (insertL 2 3 '(1 3)) '(1 2 3))
+
+(define insertR (insert-g seqR))
+
+(check-equal? (insertR 3 2 '(1 2)) '(1 2 3))
+
+(define insertL-anonymous
+  (insert-g
+   (lambda (new old l)
+     (cons new (cons old l)))))
+
+(check-equal? (insertL-anonymous 2 3 '(1 3)) '(1 2 3))
+
+
+(define subst
+  (insert-g
+   (lambda (new old l)
+     (cons new l))))
+
+(check-equal? (subst 'topping 'fudge '(ice cream with fudge for dessert))
+              '(ice cream with topping for dessert))
+(check-equal? (subst 'new 'old '()) '())
+(check-equal? (subst 'e 'f '(a b c d f g h)) '(a b c d e g h))
+
+(define rember
+  (lambda (a l)
+    ((insert-g
+     (lambda (new old l)
+       l)) #f a l)))
+
+(check-equal? (rember 1 '(1 2)) '(2))
+
+
+(define 1st-sub-exp
+  (lambda (aexp)
+    (car (cdr aexp))))
+
+(define 2nd-sub-exp
+  (lambda (aexp)
+    (car (cdr (cdr aexp)))))
+
+(define atom-to-function
+  (lambda (x)
+    (cond
+      [(eq? x '+) plus]
+      [(eq? x '*) mult]
+      [else exp])))
+
+;; value using the prefix notaion for numeric expressions
+(define value
+  (lambda (nexp)
+    (cond
+      [(atom? nexp) nexp]
+      [else ((atom-to-function (car nexp))
+            (value (1st-sub-exp nexp)) (value (2nd-sub-exp nexp)))])))
+
+(check-equal? (value '14) '14)
+(check-equal? (value '(+ 1 3)) '4)
+(check-equal? (value '(+ 1 (^ 2 3))) '9)
+
+
