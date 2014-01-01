@@ -22,8 +22,7 @@
   (lambda (a lat)
     (cond
       [(null? lat) #f]
-      [else (or (eq? a (car lat)) (member? a (cdr lat)))])
-  ))
+      [else (or (eq? a (car lat)) (member? a (cdr lat)))])))
 
 (check-true (member? 'hello '(hello world)))
 (check-false (member? 'test '(hello world)))
@@ -125,8 +124,7 @@
     (cond
       [(null? lat) '()]
       [(eq? a (car lat)) (multirember a (cdr lat))]
-      [else (cons (car lat) (multirember a (cdr lat)))]
-      )))
+      [else (cons (car lat) (multirember a (cdr lat)))])))
 
 (check-equal? (multirember 'test '()) '())
 (check-equal? (multirember 'cup '(coffee cup tea cup and hick cup))

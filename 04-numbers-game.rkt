@@ -1,7 +1,6 @@
 #lang racket
 
 (require rackunit)
-(require rackunit/text-ui)
 
 (define atom?
   (lambda (x)
