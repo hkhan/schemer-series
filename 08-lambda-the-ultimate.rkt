@@ -219,3 +219,46 @@
 ;; count the number of matches
 (check-equal? (multirember&co 'tuna '(tuna pasta and tuna salad)
                               (lambda (x y) (length y))) 2)
+
+
+(define multiinsertLR
+  (lambda (new oldL oldR lat)
+    (cond
+      [(null? lat) '()]
+      [(eq? oldL (car lat))
+       (cons new (cons (car lat) (multiinsertLR new oldL oldR (cdr lat))))]
+      [(eq? oldR (car lat))
+       (cons (car lat) (cons new (multiinsertLR new oldL oldR (cdr lat))))]
+      [else (cons (car lat) (multiinsertLR new oldL oldR (cdr lat)))])))
+
+(check-equal? (multiinsertLR 'test 'hello 'world '(hello world))
+              '(test hello world test))
+(check-equal? (multiinsertLR 'test 'hello 'world '(hello there world))
+              '(test hello there world test))
+
+
+(define multiinsertLR&co
+  (lambda (new oldL oldR lat col)
+    (cond
+      [(null? lat) (col '() 0 0)]
+      [(eq? oldL (car lat))
+       (multiinsertLR&co new oldL oldR (cdr lat)
+                         (lambda (newlat L R)
+                           (col (cons new (cons (car lat) newlat)) (add1 L) R)))]
+      [(eq? oldR (car lat))
+       (multiinsertLR&co new oldL oldR (cdr lat)
+                         (lambda (newlat L R)
+                           (col (cons (car lat) (cons new newlat)) L (add1 R))))]
+      [else (multiinsertLR&co new oldL oldR (cdr lat)
+                              (lambda (newlat L R)
+                                (col (cons (car lat) newlat) L R)))])))
+
+(check-equal? (multiinsertLR&co 'test 'hello 'world '(hello world)
+                             (lambda (newlat L R) (list newlat L R)))
+              '((test hello world test) 1 1))
+(check-equal? (multiinsertLR&co 'test 'hello 'worlds '(hello there world)
+                             (lambda (newlat L R) (list newlat L R)))
+              '((test hello there world) 1 0))
+(check-equal? (multiinsertLR&co 'salty 'fish 'chips '(chips and fish or fish and chips)
+                             (lambda (newlat L R) (list newlat L R)))
+              '((chips salty and salty fish or salty fish and chips salty) 2 2))
