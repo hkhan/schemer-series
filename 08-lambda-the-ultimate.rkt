@@ -181,4 +181,41 @@
 (check-equal? (value '(+ 1 3)) '4)
 (check-equal? (value '(+ 1 (^ 2 3))) '9)
 
+(define multirember-f
+  (lambda (test?)
+    (lambda (a lat)
+      (cond
+        [(null? lat) '()]
+        [(test? a (car lat)) ((multirember-f test?) a (cdr lat))]
+        [else (cons (car lat) ((multirember-f test?) a (cdr lat)))]))))
 
+(check-equal? ((multirember-f eq?) 'tuna '(shrimp salad tuna salad and tuna))
+              '(shrimp salad salad and))
+
+(define multirember-eq? (multirember-f eq?))
+
+(define eq?-tuna
+  (lambda (a)
+    (eq?-c 'tuna)))
+
+
+(define multirember&co
+    (lambda (a lat col)
+      (cond
+        [(null? lat) (col '() '())]
+        [(eq? a (car lat)) (multirember&co a
+                                           (cdr lat)
+                                           (lambda (newlat seen)
+                                              (col newlat (cons (car lat) seen))))]
+        [else (multirember&co a
+                              (cdr lat)
+                              (lambda (newlat seen)
+                                (col (cons (car lat) newlat) seen)))])))
+
+;; list of matches empty?
+(check-false (multirember&co 'tuna '(tuna pasta) (lambda (x y) (null? y))))
+(check-true (multirember&co 'tuna '(strawberry cheesecake) (lambda (x y) (null? y))))
+
+;; count the number of matches
+(check-equal? (multirember&co 'tuna '(tuna pasta and tuna salad)
+                              (lambda (x y) (length y))) 2)
