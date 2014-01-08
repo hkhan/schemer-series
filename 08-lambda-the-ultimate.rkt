@@ -262,3 +262,42 @@
 (check-equal? (multiinsertLR&co 'salty 'fish 'chips '(chips and fish or fish and chips)
                              (lambda (newlat L R) (list newlat L R)))
               '((chips salty and salty fish or salty fish and chips salty) 2 2))
+
+(define even?
+  (lambda (n)
+    (= (* (quotient n 2) 2) n)))
+
+(define evens-only*
+  (lambda (l)
+    (cond
+      [(null? l) '()]
+      [(atom? (car l)) (cond
+                         [(even? (car l)) (cons (car l) (evens-only* (cdr l)))]
+                         [else (evens-only* (cdr l))])]
+      [else (cons (evens-only* (car l)) (evens-only* (cdr l)))])))
+
+(check-equal? (evens-only* '((9 1 2 8) 3 10 ((9 9) 7 6) 2)) '((2 8) 10 (() 6) 2))
+
+;; function to build a nested list of even nos by removing the odd ones
+;; and simultaneously multiplies the even nos and sums up the odd numbers in the arg list
+(define evens-only*&co
+  (lambda (l col)
+    (cond
+      [(null? l) (col '() 1 0)]
+      [(atom? (car l)) (cond
+                         [(even? (car l))
+                          (evens-only*&co (cdr l)
+                                          (lambda (newl p s)
+                                            (col (cons (car l) newl) (* p (car l)) s)))]
+                         [else (evens-only*&co (cdr l)
+                                          (lambda (newl p s)
+                                            (col newl p (+ s (car l)))))])]
+      [else (evens-only*&co (car l)
+                            (lambda (al ap as)
+                              (evens-only*&co (cdr l)
+                                              (lambda (dl dp ds)
+                                              (col (cons al dl) (* ap dp) (+ as ds))))))])))
+
+(check-equal? (evens-only*&co '((9 1 2 8) 3 10 ((9 9) 7 6) 2)
+                              (lambda (newl p s) (list newl p s)))
+              '(((2 8) 10 (() 6) 2) 1920 38))
