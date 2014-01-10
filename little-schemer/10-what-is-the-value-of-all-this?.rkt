@@ -220,12 +220,3 @@
              (extend-table (new-entry (formals-of closure)
                                       vals)
                            (table-of closure)))))
-
-             
-
-
-
-
-
-
- 
