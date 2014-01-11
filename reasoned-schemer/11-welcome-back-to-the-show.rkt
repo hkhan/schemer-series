@@ -13,12 +13,13 @@
       [(eq? a (car lat)) #t]
       [else (member? a (cdr lat))])))
 
-(define two-in-a-row?
+; original definition
+(define two-in-a-row-o?
   (lambda (lat)
     (cond
       [(null? lat) #f]
       [(is-first? (car lat) (cdr lat))]
-      [else (two-in-a-row? (cdr lat))])))
+      [else (two-in-a-row-o? (cdr lat))])))
 
 ;; this function could return false in 2 cases and it only makes sense to carry
 ;; on searching in the rest of the list in the second one of those.
@@ -28,8 +29,8 @@
       [(null? lat) #f]
       [else (eq? a (car lat))])))
 
-(check-false (two-in-a-row? '(a b c)))
-(check-true (two-in-a-row? '(a b b c)))
+(check-false (two-in-a-row-o? '(a b c)))
+(check-true (two-in-a-row-o? '(a b b c)))
 
 ;; we could leave the decision (about continuing to search) in is-firsts? function
 (define two-in-a-row-revised?
@@ -56,14 +57,14 @@
       [else (or (eq? preceeding (car lat)) 
                 (two-in-a-row-b? (car lat) (cdr lat)))])))
 
-(define two-in-a-row-final?
+(define two-in-a-row?
   (lambda (lat)
     (cond
       [(null? lat) #f]
       [else (two-in-a-row-b? (car lat) (cdr lat))])))
 
-(check-false (two-in-a-row-final? '(a b c)))
-(check-true (two-in-a-row-final? '(a b b c)))
+(check-false (two-in-a-row? '(a b c)))
+(check-true (two-in-a-row? '(a b b c)))
 
 (define sum-of-prefixes
   (lambda (tup)
